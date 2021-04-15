@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormControl, Validators, AbstractControl } from '@angular/forms';
+import { Router } from '@angular/router';
 import { LoginService } from '../services/login.service';
 
 const formElements: FormElements[] = [
@@ -33,13 +34,15 @@ export class LoginFormComponent implements OnInit {
     return this.formGroup.controls;
   }
 
-  constructor(private loginService: LoginService) { }
+  constructor(private loginService: LoginService, private router: Router) { }
 
   ngOnInit(): void {
   }
 
   handleLogin(): void {
-    this.loginService.login(this.fromGroupControl.userEmail.value, this.fromGroupControl.password.value).subscribe();
+    this.loginService.login(this.fromGroupControl.userEmail.value, this.fromGroupControl.password.value).subscribe({
+      next: () => this.router.navigate(['dashboard'])
+    });
   }
 
   formControlError(formControlName: string): boolean{

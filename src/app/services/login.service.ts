@@ -12,11 +12,14 @@ export const SESSION_TOKEN = 'token';
 })
 export class LoginService {
 
-  private tokenBS: BehaviorSubject<string> = new BehaviorSubject<string>(`${localStorage.getItem(SESSION_TOKEN)}`);
+  private tokenBS: BehaviorSubject<string | null> = new BehaviorSubject<string | null>(localStorage.getItem(SESSION_TOKEN));
 
-  get token(): string {
-    console.log(this.tokenBS.value);
+  get token(): string | null{
     return this.tokenBS.value;
+  }
+
+  get isUserLoggedIn(): boolean {
+    return this.tokenBS.value !== null;
   }
 
   constructor(
