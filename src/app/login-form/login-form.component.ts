@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormGroup, FormControl, Validators, AbstractControl } from '@angular/forms';
 import { Router } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { LoginService } from '../services/login.service';
 
 const formElements: FormElements[] = [
@@ -21,9 +22,10 @@ const formElements: FormElements[] = [
   templateUrl: './login-form.component.html',
   styleUrls: ['./login-form.component.css']
 })
-export class LoginFormComponent implements OnInit {
+export class LoginFormComponent implements OnInit, OnDestroy {
 
   formElements: FormElements[] = formElements;
+  loginSub: Subscription = Subscription.EMPTY;
 
   formGroup = new FormGroup({
     userEmail: new FormControl('', [Validators.required, Validators.email]),
@@ -40,7 +42,7 @@ export class LoginFormComponent implements OnInit {
   }
 
   handleLogin(): void {
-    this.loginService.login(this.fromGroupControl.userEmail.value, this.fromGroupControl.password.value).subscribe({
+    this.loginSub = this.loginService.login(this.fromGroupControl.userEmail.value, this.fromGroupControl.password.value).subscribe({
       next: () => this.router.navigate(['dashboard'])
     });
   }
@@ -54,6 +56,10 @@ export class LoginFormComponent implements OnInit {
       return 'Pole nie może być puste';
     }
     return this.formGroup.controls[`${formControlName}`].hasError('email') ? 'Zły adres email' : '';
+  }
+
+  ngOnDestroy(): void {
+    this.loginSub.unsubscribe();
   }
 
 }
