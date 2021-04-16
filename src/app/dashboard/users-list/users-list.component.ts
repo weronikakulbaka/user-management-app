@@ -1,10 +1,11 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { User } from 'src/app/models/user';
 import { UsersService } from '../services/users.service';
 import { MatSort, Sort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { Subscription } from 'rxjs';
 
 
 @Component({
@@ -12,7 +13,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
   templateUrl: './users-list.component.html',
   styleUrls: ['./users-list.component.css']
 })
-export class UsersListComponent implements OnInit {
+export class UsersListComponent implements OnInit, OnDestroy {
 
   displayedColumns: string[] = ['id', 'avatar' ,'first_name', 'last_name', 'email', 'delete'];
   dataSource!: MatTableDataSource<User>;
@@ -21,6 +22,8 @@ export class UsersListComponent implements OnInit {
   pageIndex: number = 0;
   pageSize: number = 10;
   length: number = 1;
+
+  usersSubscription: Subscription = new Subscription();
 
   @ViewChild(MatSort) sort!: MatSort;
 
@@ -41,7 +44,7 @@ export class UsersListComponent implements OnInit {
 
   loadUsers(event: PageEvent): PageEvent {
     const page: number = event.pageIndex + 1;
-    this.usersService.getUsers(page).subscribe({
+    this.usersSubscription.add(this.usersService.getUsers(page).subscribe({
       next: (response) => {
         this.users = response.data;
         this.pageIndex = response.pageIndex;
@@ -50,19 +53,19 @@ export class UsersListComponent implements OnInit {
         this.dataSource = new MatTableDataSource(response.data);
         this.dataSource.sort = this.sort;
       }
-    })
+    }))
     return event;
   }
 
   deleteUser(event: any, user: User){
-    this.usersService.deleteUser(user).subscribe(
+    this.usersSubscription.add(this.usersService.deleteUser(user).subscribe(
       {
         next: () => {
           this.openSnackBar(`Usunięto użytkownika o id ${user.id}`, 'Zamknij');
           this.dataSource.data = this.dataSource.data.filter(e => e.id != user.id);
         } 
       }
-    )
+    ));
   }
 
   
@@ -75,4 +78,9 @@ export class UsersListComponent implements OnInit {
   // editUser(event: any, user: User){
 
   // }
+
+
+  ngOnDestroy(){
+    this.usersSubscription.unsubscribe();
+  }
 }
