@@ -30,6 +30,9 @@ import { JwtInterceptor } from './jwt.interceptor';
       multi: true,
     }
   ],
+  exports: [
+    HttpClientModule
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
