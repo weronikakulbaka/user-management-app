@@ -6,7 +6,8 @@ import { FormComponent } from './form/form.component';
 const routes: Routes = [
   {path: '', redirectTo: 'dashboard', pathMatch: 'full'},
   {path: 'login', component: FormComponent},
-  {path: 'dashboard', loadChildren: () => import('./dashboard/dashboard.module').then(m => m.DashboardModule), canActivate: [DashboardGuard]}
+  {path: 'dashboard', loadChildren: () => import('./dashboard/dashboard.module').then(m => m.DashboardModule), canActivate: [DashboardGuard]},
+  {path: '**', redirectTo: 'dashboard', pathMatch: 'full'},
 ];
 
 @NgModule({

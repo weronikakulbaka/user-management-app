@@ -1,8 +1,9 @@
 import { Component, OnDestroy, OnInit, TemplateRef } from '@angular/core';
 import { FormGroup, FormControl, Validators, AbstractControl, ValidatorFn } from '@angular/forms';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { LoginService } from '../services/login.service';
+import { AuthService } from '../services/auth.service';
 
 const formElements: FormElement[] = [
   {
@@ -28,7 +29,7 @@ export class FormComponent implements OnInit, OnDestroy {
 
   formElements: FormElement[] = formElements;
   registrationForm: boolean = false;
-  loginSub: Subscription = Subscription.EMPTY;
+  subscriptions: Subscription = new Subscription();
 
   formGroup = new FormGroup({
     userEmail: new FormControl('', [Validators.required, Validators.email]),
@@ -39,7 +40,11 @@ export class FormComponent implements OnInit, OnDestroy {
     return this.formGroup.controls;
   }
 
-  constructor(private loginService: LoginService, private router: Router) { }
+  constructor(
+    private authService: AuthService, 
+    private router: Router,
+    readonly snackBar: MatSnackBar
+    ) { }
 
   ngOnInit(): void {
   }
@@ -49,16 +54,33 @@ export class FormComponent implements OnInit, OnDestroy {
   }
 
   handleLogin(): void {
-    this.loginSub = this.loginService.login(this.fromGroupControl.userEmail.value, this.fromGroupControl.password.value).subscribe({
-      next: () => {
-        this.router.navigate(['dashboard'])
-        this.formGroup.reset();
-      }
-    });
+    this.subscriptions.add(
+      this.authService.login(this.fromGroupControl.userEmail.value, this.fromGroupControl.password.value).subscribe({
+        next: () => {
+          this.router.navigate(['dashboard'])
+          this.registrationForm = false;
+          this.formGroup.reset();
+        }
+      })
+    );
   }
 
   handleRegistration(): void {
-    console.log('register')
+    this.subscriptions.add(
+      this.authService.register(this.fromGroupControl.userEmail.value, this.fromGroupControl.password.value).subscribe({
+        next: () => {
+          this.openSnackBar('Rejestracja powiodła się. Jesteś zalogowany.', 'Zamknij')
+          this.router.navigate(['dashboard'])
+          this.formGroup.reset();
+        }
+      })
+    );
+  }
+
+  openSnackBar(message: string, action: string) {
+    this.snackBar.open(message, action, {
+      duration: 5000,
+    });
   }
 
   formControlError(formControlName: string): boolean {
@@ -69,7 +91,7 @@ export class FormComponent implements OnInit, OnDestroy {
     if (this.formGroup.controls[`${formControlName}`].hasError('required')) {
       return 'Pole nie może być puste';
     }
-    if(this.formGroup.controls[`${formControlName}`].hasError('mismatchedPasswords')){
+    if (this.formGroup.controls[`${formControlName}`].hasError('mismatchedPasswords')) {
       return this.formGroup.controls[`${formControlName}`]?.errors?.mismatchedPasswords;
     }
     return this.formGroup.controls[`${formControlName}`].hasError('email') ? 'Zły adres email' : '';
@@ -99,11 +121,10 @@ export class FormComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.loginSub.unsubscribe();
+    this.subscriptions.unsubscribe();
   }
 
 }
-
 interface FormElement {
   inputType: string;
   inputPlaceholder: string;

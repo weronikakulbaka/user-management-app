@@ -17,7 +17,7 @@
         <button mat-button color="accent" (click)="registrationToggle($event, true)">Rejestracja</button>
       </ng-template>
       <ng-template #registration>
-        <button type="submit" mat-raised-button color="accent">Zarejestruj się</button>
+        <button type="submit" mat-raised-button color="accent" [disabled]="formGroup.invalid" >Zarejestruj się</button>
         <button mat-button color="accent" (click)="registrationToggle($event, false)">Wróć do logowania</button>
       </ng-template>
     </form>
