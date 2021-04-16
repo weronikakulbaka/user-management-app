@@ -59,7 +59,6 @@ export class FormComponent implements OnInit, OnDestroy {
         next: () => {
           this.router.navigate(['dashboard'])
           this.registrationForm = false;
-          this.formGroup.reset();
         }
       })
     );
@@ -71,7 +70,7 @@ export class FormComponent implements OnInit, OnDestroy {
         next: () => {
           this.openSnackBar('Rejestracja powiodła się. Jesteś zalogowany.', 'Zamknij')
           this.router.navigate(['dashboard'])
-          this.formGroup.reset();
+          this.registrationForm = false;
         }
       })
     );
@@ -122,6 +121,7 @@ export class FormComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
+    this.formGroup.reset();
   }
 
 }

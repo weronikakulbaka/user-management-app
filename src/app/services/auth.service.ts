@@ -37,10 +37,12 @@ export class AuthService {
 
   register(username: string, password: string): Observable<{id: number, token: string}>{
     return this.httpClient.post<{id: number, token: string}>(`${environment.apiUrl}/register`, { username, password })
-    .pipe(map((reponse: any) => {
+    .pipe(
+      map((reponse: any) => {
       this.registerSuccessfulLogin(reponse.token);
       return reponse;
-    }));
+      })
+    );
   }
 
   logout(): void {
